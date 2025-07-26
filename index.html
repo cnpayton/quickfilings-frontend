@@ -451,9 +451,8 @@
     </div>
 
     <script>
-        // Configuration - UPDATE THIS WITH YOUR DEPLOYED BACKEND URL
-        const API_BASE_URL = 'https://quickfilings-backend.onrender.com/'; // For local testing
-        // const API_BASE_URL = 'https://your-railway-app.railway.app'; // For production
+        // Configuration - Updated with your live backend URL
+        const API_BASE_URL = 'https://quickfilings-backend.onrender.com';
         
         let companyData = null;
         let availableFiles = [];
@@ -795,90 +794,10 @@
                 }
             } catch (error) {
                 console.warn('⚠️ Backend API not reachable:', error.message);
-                showStatus('ℹ️ Backend not deployed yet - using test mode', 'loading');
-                
-                // Enable test mode
-                enableTestMode();
+                showStatus('⚠️ Backend connection failed - check console', 'error');
+                setTimeout(hideStatus, 3000);
             }
         });
-
-        // Test mode for when backend isn't available
-        function enableTestMode() {
-            console.log('🧪 Enabling test mode with mock data');
-            
-            // Override the search function for testing
-            window.originalSearchCompany = searchCompany;
-            window.searchCompany = async function() {
-                const ticker = document.getElementById('ticker').value.trim().toUpperCase();
-                
-                if (!ticker) {
-                    showStatus('Please enter a ticker symbol', 'error');
-                    return;
-                }
-
-                showStatus('🧪 Test mode - generating mock data...');
-                
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Generate mock data
-                companyData = {
-                    ticker: ticker,
-                    name: getTestCompanyName(ticker),
-                    cik: '0000320193',
-                    exchange: 'NASDAQ'
-                };
-
-                availableFiles = generateTestFiles(ticker);
-                
-                showStatus(`🧪 Test: Found ${availableFiles.length} files for ${companyData.name}`, 'success');
-                displayResults();
-            };
-        }
-
-        function getTestCompanyName(ticker) {
-            const names = {
-                'AAPL': 'Apple Inc.',
-                'MSFT': 'Microsoft Corporation',
-                'GOOGL': 'Alphabet Inc.',
-                'TSLA': 'Tesla Inc.',
-                'NVDA': 'NVIDIA Corporation'
-            };
-            return names[ticker] || `${ticker} Corporation`;
-        }
-
-        function generateTestFiles(ticker) {
-            return [
-                {
-                    name: `${ticker}_10Q_Q2_2025.pdf`,
-                    type: '10-Q Quarterly Filing',
-                    date: '2025-07-15',
-                    size: '1.8 MB',
-                    url: `https://www.sec.gov/test/${ticker}_10Q_Q2_2025.pdf`
-                },
-                {
-                    name: `${ticker}_10K_2024.pdf`,
-                    type: '10-K Annual Filing',
-                    date: '2025-02-15',
-                    size: '2.5 MB',
-                    url: `https://www.sec.gov/test/${ticker}_10K_2024.pdf`
-                },
-                {
-                    name: `${ticker}_Q2_2025_Earnings.pdf`,
-                    type: 'Earnings Presentation',
-                    date: '2025-07-25',
-                    size: '750 KB',
-                    url: `https://investor.${ticker.toLowerCase()}.com/test_earnings.pdf`
-                },
-                {
-                    name: `${ticker}_Investor_Day_2024.pdf`,
-                    type: 'Annual Investor Day',
-                    date: '2024-09-15',
-                    size: '6.2 MB',
-                    url: `https://investor.${ticker.toLowerCase()}.com/test_investor_day.pdf`
-                }
-            ];
-        }
     </script>
 </body>
 </html>
