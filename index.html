@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickFilings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .main-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .input-section {
+            margin-bottom: 40px;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #D97706;
+        }
+
+        .btn {
+            background: #D97706;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #B45309;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .file-types {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .file-type {
+            background: #f8f8f8;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            user-select: none;
+        }
+
+        .file-type:hover {
+            background: #f0f0f0;
+        }
+
+        .file-type.selected {
+            background: #FED7AA;
+            border-color: #D97706;
+        }
+
+        .file-type span {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .download-options {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .download-options h3 {
+            color: #333;
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .options-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            display: none;
+            font-size: 0.95rem;
+        }
+
+        .status.success {
+            background: #F0FDF4;
+            color: #166534;
+            border: 1px solid #BBF7D0;
+        }
+
+        .status.error {
+            background: #FEF2F2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .status.loading {
+            background: #F9FAFB;
+            color: #374151;
+            border: 1px solid #E5E7EB;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #D97706;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .results h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .download-all-btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-all-btn:hover {
+            background: #047857;
+        }
+
+        .download-all-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: #f5f5f5;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: #D97706;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .file-details-section {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .file-details {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .action-btn {
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+        }
+
+        .action-btn:hover {
+            background: #e8e8e8;
+            border-color: #D97706;
+        }
+
+        .action-btn.primary {
+            background: #D97706;
+            border-color: #D97706;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #B45309;
+        }
+
+        .download-btn {
+            background: #D97706;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .download-btn:hover {
+            background: #B45309;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>QuickFilings</h1>
+            <p>Download SEC financials and presentations for any public company instantly</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="search-row">
+                    <div class="form-group">
+                        <label for="ticker">Company Ticker</label>
+                        <input type="text" id="ticker" placeholder="e.g., AAPL, MSFT, GOOGL" style="text-transform: uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label for="exchange">Exchange</label>
+                        <select id="exchange">
+                            <option value="auto">Auto-detect</option>
+                            <option value="nasdaq">NASDAQ</option>
+                            <option value="nyse">NYSE</option>
+                            <option value="amex">AMEX</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="searchCompany()">Search</button>
+                </div>
+
+                <div class="file-types">
+                    <div class="file-type selected" data-type="quarterlyAnnual">
+                        <span>Quarterly/Annual Filings</span>
+                    </div>
+                    <div class="file-type" data-type="form8k">
+                        <span>8-K Current Reports</span>
+                    </div>
+                    <div class="file-type selected" data-type="earnings">
+                        <span>Earnings Presentations</span>
+                    </div>
+                    <div class="file-type" data-type="presentations">
+                        <span>Investor Presentations</span>
+                    </div>
+                </div>
+
+                <div class="download-options">
+                    <h3>Download Options</h3>
+                    <div class="options-row">
+                        <div class="form-group">
+                            <label for="annualsPeriod">Annual Reports</label>
+                            <select id="annualsPeriod">
+                                <option value="0">None</option>
+                                <option value="1">Last 1 Year</option>
+                                <option value="2">Last 2 Years</option>
+                                <option value="3">Last 3 Years</option>
+                                <option value="4">Last 4 Years</option>
+                                <option value="5" selected>Last 5 Years</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="quartersPeriod">Start 10-Qs</label>
+                            <select id="quartersPeriod">
+                                <option value="0">None</option>
+                                <option value="3">Current Year (Q1-Q3)</option>
+                                <option value="6" selected>Last 1 Year</option>
+                                <option value="9">Last 1.5 Years</option>
+                                <option value="12">Last 2 Years</option>
+                                <option value="15">Last 2.5 Years</option>
+                                <option value="18">Last 3 Years</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="format">Format</label>
+                            <select id="format">
+                                <option value="pdf">PDF</option>
+                                <option value="xlsx">Excel</option>
+                                <option value="html">HTML</option>
+                                <option value="original">Original</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status" id="status"></div>
+
+            <div class="results" id="results">
+                <div class="results-header">
+                    <h3>Available Files</h3>
+                    <button class="download-all-btn" id="downloadAllBtn" onclick="downloadAllFiles()" style="display: none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download All (<span id="fileCount">0</span>)
+                    </button>
+                </div>
+                <div id="fileList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - UPDATE THIS WITH YOUR DEPLOYED BACKEND URL
+        const API_BASE_URL = 'https://quickfilings-backend.onrender.com/'; // For local testing
+        // const API_BASE_URL = 'https://your-railway-app.railway.app'; // For production
+        
+        let companyData = null;
+        let availableFiles = [];
+        let selectedTypes = new Set(['quarterlyAnnual', 'earnings']);
+        let isDownloadingAll = false;
+
+        // Handle file type selection
+        document.querySelectorAll('.file-type').forEach(item => {
+            item.addEventListener('click', function() {
+                const type = this.dataset.type;
+                
+                if (selectedTypes.has(type)) {
+                    selectedTypes.delete(type);
+                    this.classList.remove('selected');
+                } else {
+                    selectedTypes.add(type);
+                    this.classList.add('selected');
+                }
+            });
+        });
+
+        function showStatus(message, type = 'loading') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            if (type === 'loading') {
+                status.innerHTML = `<div class="loading-spinner"></div>${message}`;
+            } else {
+                status.innerHTML = message;
+            }
+        }
+
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+
+        async function searchCompany() {
+            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+            const exchange = document.getElementById('exchange').value;
+            const quartersBack = parseInt(document.getElementById('quartersPeriod').value);
+            const annualsBack = parseInt(document.getElementById('annualsPeriod').value);
+            
+            if (!ticker) {
+                showStatus('Please enter a ticker symbol', 'error');
+                return;
+            }
+
+            if (selectedTypes.size === 0) {
+                showStatus('Please select at least one file type', 'error');
+                return;
+            }
+
+            showStatus('Searching for company and available files...');
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ticker: ticker,
+                        file_types: Array.from(selectedTypes),
+                        quarters_back: quartersBack,
+                        annuals_back: annualsBack,
+                        exchange: exchange
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to fetch data');
+                }
+
+                const data = await response.json();
+                companyData = data.company;
+                availableFiles = data.files;
+                
+                if (availableFiles.length === 0) {
+                    showStatus('No files found for the selected criteria', 'error');
+                    return;
+                }
+                
+                showStatus(`Found ${availableFiles.length} files for ${companyData.name} (${ticker})`, 'success');
+                displayResults();
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function getFileIcon(fileName) {
+            const extension = fileName.split('.').pop().toLowerCase();
+            switch (extension) {
+                case 'pdf':
+                    return 'PDF';
+                case 'xlsx':
+                case 'xls':
+                    return 'XLS';
+                case 'txt':
+                    return 'TXT';
+                case 'html':
+                case 'htm':
+                    return 'HTM';
+                default:
+                    return 'DOC';
+            }
+        }
+
+        function displayResults() {
+            const results = document.getElementById('results');
+            const fileList = document.getElementById('fileList');
+            const downloadAllBtn = document.getElementById('downloadAllBtn');
+            const fileCount = document.getElementById('fileCount');
+            
+            fileList.innerHTML = '';
+            
+            availableFiles.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon">${getFileIcon(file.name)}</div>
+                        <div class="file-details-section">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-details">${file.type} • ${file.date} • ${file.size}</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="action-btn" onclick="viewFile('${file.name}', '${file.url}')" title="View/Open">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn primary" onclick="downloadFile('${file.name}', '${file.url}')" title="Download">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="copyFileLink('${file.name}', '${file.url}')" title="Copy Link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                fileList.appendChild(fileItem);
+            });
+            
+            // Update download all button
+            fileCount.textContent = availableFiles.length;
+            downloadAllBtn.style.display = availableFiles.length > 1 ? 'flex' : 'none';
+            
+            results.style.display = 'block';
+        }
+
+        async function downloadAllFiles() {
+            if (isDownloadingAll || availableFiles.length === 0) return;
+            
+            isDownloadingAll = true;
+            const downloadAllBtn = document.getElementById('downloadAllBtn');
+            const originalText = downloadAllBtn.innerHTML;
+            
+            downloadAllBtn.disabled = true;
+            downloadAllBtn.innerHTML = `
+                <div class="loading-spinner"></div>
+                Downloading... (0/${availableFiles.length})
+            `;
+            
+            showStatus(`Starting download of ${availableFiles.length} files...`);
+            
+            let successful = 0;
+            let failed = 0;
+            
+            for (let i = 0; i < availableFiles.length; i++) {
+                const file = availableFiles[i];
+                
+                try {
+                    // Update progress
+                    downloadAllBtn.innerHTML = `
+                        <div class="loading-spinner"></div>
+                        Downloading... (${i + 1}/${availableFiles.length})
+                    `;
+                    
+                    await downloadSingleFile(file.name, file.url);
+                    successful++;
+                    
+                    // Add delay between downloads to be respectful
+                    if (i < availableFiles.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                    
+                } catch (error) {
+                    console.error(`Failed to download ${file.name}:`, error);
+                    failed++;
+                }
+            }
+            
+            // Reset button
+            downloadAllBtn.disabled = false;
+            downloadAllBtn.innerHTML = originalText;
+            isDownloadingAll = false;
+            
+            // Show completion status
+            if (failed === 0) {
+                showStatus(`✅ Successfully downloaded all ${successful} files!`, 'success');
+            } else {
+                showStatus(`⚠️ Downloaded ${successful} files, ${failed} failed`, 'error');
+            }
+            
+            setTimeout(hideStatus, 5000);
+        }
+
+        async function downloadSingleFile(fileName, url) {
+            return new Promise((resolve, reject) => {
+                try {
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileName;
+                    link.style.display = 'none';
+                    
+                    // Add to document and click
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        function viewFile(fileName, url) {
+            showStatus(`Opening ${fileName}...`);
+            window.open(url, '_blank');
+            showStatus(`Opened ${fileName}`, 'success');
+            setTimeout(hideStatus, 2000);
+        }
+
+        async function downloadFile(fileName, url) {
+            showStatus(`Downloading ${fileName}...`);
+            
+            try {
+                // For modern browsers, use fetch to download the file
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'User-Agent': 'QuickFilings/1.0'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Download failed');
+                }
+                
+                // Get the file blob
+                const blob = await response.blob();
+                
+                // Create download link
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = fileName;
+                
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Clean up
+                window.URL.revokeObjectURL(downloadUrl);
+                
+                showStatus(`Downloaded ${fileName}`, 'success');
+                setTimeout(hideStatus, 3000);
+                
+            } catch (error) {
+                console.error('Download error:', error);
+                
+                // Fallback: open in new tab
+                showStatus(`Opening ${fileName} (direct download not available)...`);
+                window.open(url, '_blank');
+                showStatus(`Opened ${fileName}`, 'success');
+                setTimeout(hideStatus, 3000);
+            }
+        }
+
+        function copyFileLink(fileName, url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showStatus(`Link copied for ${fileName}`, 'success');
+                setTimeout(hideStatus, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showStatus(`Link copied for ${fileName}`, 'success');
+                setTimeout(hideStatus, 2000);
+            });
+        }
+
+        // Auto-uppercase ticker input
+        document.getElementById('ticker').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Enter key support
+        document.getElementById('ticker').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchCompany();
+            }
+        });
+
+        // Test API connection on page load
+        window.addEventListener('load', async function() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                if (response.ok) {
+                    console.log('✅ Backend API connected successfully');
+                    showStatus('✅ Backend API connected', 'success');
+                    setTimeout(hideStatus, 2000);
+                } else {
+                    console.warn('⚠️ Backend API connection issue');
+                    showStatus('⚠️ Backend API responding but with issues', 'error');
+                }
+            } catch (error) {
+                console.warn('⚠️ Backend API not reachable:', error.message);
+                showStatus('ℹ️ Backend not deployed yet - using test mode', 'loading');
+                
+                // Enable test mode
+                enableTestMode();
+            }
+        });
+
+        // Test mode for when backend isn't available
+        function enableTestMode() {
+            console.log('🧪 Enabling test mode with mock data');
+            
+            // Override the search function for testing
+            window.originalSearchCompany = searchCompany;
+            window.searchCompany = async function() {
+                const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+                
+                if (!ticker) {
+                    showStatus('Please enter a ticker symbol', 'error');
+                    return;
+                }
+
+                showStatus('🧪 Test mode - generating mock data...');
+                
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Generate mock data
+                companyData = {
+                    ticker: ticker,
+                    name: getTestCompanyName(ticker),
+                    cik: '0000320193',
+                    exchange: 'NASDAQ'
+                };
+
+                availableFiles = generateTestFiles(ticker);
+                
+                showStatus(`🧪 Test: Found ${availableFiles.length} files for ${companyData.name}`, 'success');
+                displayResults();
+            };
+        }
+
+        function getTestCompanyName(ticker) {
+            const names = {
+                'AAPL': 'Apple Inc.',
+                'MSFT': 'Microsoft Corporation',
+                'GOOGL': 'Alphabet Inc.',
+                'TSLA': 'Tesla Inc.',
+                'NVDA': 'NVIDIA Corporation'
+            };
+            return names[ticker] || `${ticker} Corporation`;
+        }
+
+        function generateTestFiles(ticker) {
+            return [
+                {
+                    name: `${ticker}_10Q_Q2_2025.pdf`,
+                    type: '10-Q Quarterly Filing',
+                    date: '2025-07-15',
+                    size: '1.8 MB',
+                    url: `https://www.sec.gov/test/${ticker}_10Q_Q2_2025.pdf`
+                },
+                {
+                    name: `${ticker}_10K_2024.pdf`,
+                    type: '10-K Annual Filing',
+                    date: '2025-02-15',
+                    size: '2.5 MB',
+                    url: `https://www.sec.gov/test/${ticker}_10K_2024.pdf`
+                },
+                {
+                    name: `${ticker}_Q2_2025_Earnings.pdf`,
+                    type: 'Earnings Presentation',
+                    date: '2025-07-25',
+                    size: '750 KB',
+                    url: `https://investor.${ticker.toLowerCase()}.com/test_earnings.pdf`
+                },
+                {
+                    name: `${ticker}_Investor_Day_2024.pdf`,
+                    type: 'Annual Investor Day',
+                    date: '2024-09-15',
+                    size: '6.2 MB',
+                    url: `https://investor.${ticker.toLowerCase()}.com/test_investor_day.pdf`
+                }
+            ];
+        }
+    </script>
+</body>
+</html>
