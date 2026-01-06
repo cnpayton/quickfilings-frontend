@@ -36,8 +36,11 @@ class SearchResponse(BaseModel):
     files: List[FileInfo]
 
 # SEC EDGAR headers (required by SEC)
+# SEC requires: Company Name, Contact Name, Contact Email
+# See: https://www.sec.gov/os/accessing-edgar-data
 SEC_HEADERS = {
-    "User-Agent": "QuickFilings/1.0 (quickfilings@example.com)"
+    "User-Agent": "QuickFilings App info@quickfilings.com",
+    "Accept-Encoding": "gzip, deflate"
 }
 
 @app.get("/health")
