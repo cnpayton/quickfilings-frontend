@@ -451,8 +451,11 @@
     </div>
 
     <script>
-        // Configuration - Updated with your live backend URL
-        const API_BASE_URL = 'https://quickfilings-backend-72vs.onrender.com';
+        // Configuration - Automatically detect backend URL
+        // Use localhost for development, otherwise use production URL
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : 'https://quickfilings-backend-72vs.onrender.com';
         
         let companyData = null;
         let availableFiles = [];
@@ -525,25 +528,35 @@
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to fetch data');
+                    let errorMessage = 'Failed to fetch data';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.detail || errorMessage;
+                    } catch (e) {
+                        errorMessage = `Server error (${response.status})`;
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 const data = await response.json();
                 companyData = data.company;
                 availableFiles = data.files;
-                
+
                 if (availableFiles.length === 0) {
                     showStatus('No files found for the selected criteria', 'error');
                     return;
                 }
-                
+
                 showStatus(`Found ${availableFiles.length} files for ${companyData.name} (${ticker})`, 'success');
                 displayResults();
-                
+
             } catch (error) {
                 console.error('Search error:', error);
-                showStatus(`Error: ${error.message}`, 'error');
+                let errorMsg = error.message;
+                if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+                    errorMsg = 'Cannot connect to backend. Please ensure the backend server is running.';
+                }
+                showStatus(`Error: ${errorMsg}`, 'error');
             }
         }
 
@@ -779,14 +792,19 @@
 
         // Test API connection on page load
         window.addEventListener('load', async function() {
+            console.log(`🔗 Using backend: ${API_BASE_URL}`);
             try {
                 const response = await fetch(`${API_BASE_URL}/health`, {
                     method: 'GET',
-                    mode: 'cors'
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 });
                 if (response.ok) {
-                    console.log('✅ Backend API connected successfully');
-                    showStatus('✅ Backend API connected', 'success');
+                    const data = await response.json();
+                    console.log('✅ Backend API connected successfully', data);
+                    showStatus('✅ Ready to search SEC filings', 'success');
                     setTimeout(hideStatus, 2000);
                 } else {
                     console.warn('⚠️ Backend API connection issue');
@@ -794,8 +812,8 @@
                 }
             } catch (error) {
                 console.warn('⚠️ Backend API not reachable:', error.message);
-                showStatus('⚠️ Backend connection failed - check console', 'error');
-                setTimeout(hideStatus, 3000);
+                showStatus(`⚠️ Backend not connected. Run locally or check deployment.`, 'error');
+                setTimeout(hideStatus, 5000);
             }
         });
     </script>
